@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Master Admin — CampusConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .master-badge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .danger-zone {
+      border: 2px solid var(--danger);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+    .danger-zone h4 {
+      color: var(--danger);
+      margin-bottom: 1rem;
+    }
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      transition: var(--transition);
+    }
+    .item-row:hover {
+      border-color: var(--accent-1);
+    }
+    .item-info {
+      flex: 1;
+    }
+    .item-info h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .item-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .tab-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .tab-btn.active {
+      background: var(--accent-gradient);
+      border-color: transparent;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-mesh"></div>
+  <div class="bg-gradient-blur"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <span class="nav-brand-icon">🎓</span>
+      CampusConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/clubs">Clubs</a></li>
+      <li><a href="/events">Events</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="nav-auth"></div>
+    </div>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="dashboard">
+    <div class="container">
+      <div class="dashboard-header fade-in">
+        <div class="dashboard-welcome">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <h1>Master Admin Panel 🛡️</h1>
+            <span class="master-badge">Super Admin</span>
+          </div>
+          <p>Full control over all clubs and events</p>
+        </div>
+        <button onclick="api.logout()" class="btn btn-outline">Logout</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid fade-in">
+        <div class="stat-card">
+          <div class="stat-icon">🏫</div>
+          <div class="stat-content">
+            <div class="stat-value" id="total-clubs">0</div>
+            <div class="stat-label">Total Clubs</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <div class="stat-value" id="total-events">0</div>
+            <div class="stat-label">Total Events</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <div class="stat-value" id="total-admins">0</div>
+            <div class="stat-label">Club Admins</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="admin-section fade-in">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab('clubs')">🏫 Manage Clubs</button>
+          <button class="tab-btn" onclick="switchTab('events')">📅 Manage Events</button>
+        </div>
+
+        <!-- Clubs Tab -->
+        <div id="clubs-tab" class="tab-content active">
+          <h2 style="margin-bottom: 1rem;">All Clubs</h2>
+          <div id="clubs-list">
+            <div class="loader"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Events Tab -->
+        <div id="events-tab" class="tab-content">
+          <h2 style="margin-bottom: 1rem;">All Events</h2>
+          <div id="events-list">
+            <div class="loader"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>⚠️ Confirm Delete</h3>
+        <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+      </div>
+      <p id="delete-message" style="margin-bottom: 1.5rem; color: var(--text-secondary);"></p>
+      <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let deleteCallback = null;
+
+    // Check if user is master admin
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = api.getUser();
+      
+      if (!user || user.role !== 'masterAdmin') {
+        showToast('Access denied. Master Admin only.', 'error');
+        setTimeout(() => window.location.href = '/', 1500);
+        return;
+      }
+
+      loadClubs();
+      loadEvents();
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(`${tab}-tab`).classList.add('active');
+    }
+
+    async function loadClubs() {
+      try {
+        const clubs = await api.getClubs();
+        document.getElementById('total-clubs').textContent = clubs.length;
+        
+        const adminCount = new Set(clubs.map(c => c.admin?._id)).size;
+        document.getElementById('total-admins').textContent = adminCount;
+
+        const container = document.getElementById('clubs-list');
+        
+        if (clubs.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏫</div><h3>No clubs yet</h3></div>';
+          return;
+        }
+
+        container.innerHTML = clubs.map(club => `
+          <div class="item-row" id="club-${club._id}">
+            <div class="item-info">
+              <h4>${club.name}</h4>
+              <p>📁 ${club.category} • 👤 Admin: ${club.admin?.name || 'Unknown'} (${club.admin?.email || 'N/A'})</p>
+            </div>
+            <div class="item-actions">
+              <a href="/club/${club._id}" class="btn btn-outline btn-sm">View</a>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteClub('${club._id}', '${club.name.replace(/'/g, "\\'")}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('clubs-list').innerHTML = '<p style="color: var(--danger);">Error loading clubs</p>';
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const events = await api.getEvents();
+        document.getElementById('total-events').textContent = events.length;
+
+        const container = document.getElementById('events-list');
+        
+        if (events.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><h3>No events yet</h3></div>';
+          return;
+        }
+
+        container.innerHTML = events.map(event => `
+          <div class="item-row" id="event-${event._id}">
+            <div class="item-info">
+              <h4>${event.title}</h4>
+              <p>📁 ${event.category} • 🏫 ${event.club?.name || 'Unknown Club'} • 📅 ${formatDate(event.date)}</p>
+            </div>
+            <div class="item-actions">
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteEvent('${event._id}', '${event.title.replace(/'/g, "\\'")}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('events-list').innerHTML = '<p style="color: var(--danger);">Error loading events</p>';
+      }
+    }
+
+    function confirmDeleteClub(id, name) {
+      document.getElementById('delete-message').textContent = `Are you sure you want to delete "${name}"? This will also delete ALL events associated with this club. This action cannot be undone.`;
+      document.getElementById('delete-modal').classList.add('active');
+      
+      deleteCallback = async () => {
+        try {
+          await api.request(`/clubs/${id}`, { method: 'DELETE' });
+          showToast('Club deleted successfully', 'success');
+          document.getElementById(`club-${id}`).remove();
+          loadEvents(); // Refresh events since some may have been deleted
+          const count = parseInt(document.getElementById('total-clubs').textContent) - 1;
+          document.getElementById('total-clubs').textContent = count;
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+        closeDeleteModal();
+      };
+    }
+
+    function confirmDeleteEvent(id, title) {
+      document.getElementById('delete-message').textContent = `Are you sure you want to delete "${title}"? This action cannot be undone.`;
+      document.getElementById('delete-modal').classList.add('active');
+      
+      deleteCallback = async () => {
+        try {
+          await api.deleteEvent(id);
+          showToast('Event deleted successfully', 'success');
+          document.getElementById(`event-${id}`).remove();
+          const count = parseInt(document.getElementById('total-events').textContent) - 1;
+          document.getElementById('total-events').textContent = count;
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+        closeDeleteModal();
+      };
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').classList.remove('active');
+      deleteCallback = null;
+    }
+
+    document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+      if (deleteCallback) deleteCallback();
+    });
+  </script>
+</body>
+</html>

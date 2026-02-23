@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Login or register for CampusConnect — access your student or club admin dashboard.">
+  <title>Login — CampusConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-mesh"></div>
+  <div class="bg-gradient-blur"></div>
+  <div class="floating-shapes">
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <span class="nav-brand-icon">🎓</span>
+      CampusConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/clubs">Clubs</a></li>
+      <li><a href="/events">Events</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="nav-auth"></div>
+    </div>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="auth-container fade-in">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Welcome to CampusConnect</h2>
+        <p>Sign in to your account or create a new one</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Log In</button>
+        <button class="auth-tab" onclick="switchTab('register')">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="login-email" placeholder="you@college.edu" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="login-password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;" id="login-btn">Log In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="reg-name" placeholder="Your full name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="reg-email" placeholder="you@college.edu" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="reg-password" placeholder="Min 6 characters" minlength="6" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">I am a...</label>
+          <div class="role-select">
+            <div class="role-option active" onclick="selectRole('student', this)">
+              <div class="role-icon">🎓</div>
+              Student
+            </div>
+            <div class="role-option" onclick="selectRole('clubAdmin', this)">
+              <div class="role-icon">🛡️</div>
+              Club Admin
+            </div>
+          </div>
+          <input type="hidden" id="reg-role" value="student">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;" id="reg-btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (api.isLoggedIn()) {
+      const u = api.getUser();
+      if (u.role === 'masterAdmin') window.location.href = '/master-admin';
+      else if (u.role === 'clubAdmin') window.location.href = '/admin';
+      else window.location.href = '/dashboard';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+      });
+      document.getElementById('login-form').classList.toggle('active', tab === 'login');
+      document.getElementById('register-form').classList.toggle('active', tab === 'register');
+    }
+
+    function selectRole(role, el) {
+      document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('reg-role').value = role;
+    }
+
+    function getRedirectUrl(role) {
+      if (role === 'masterAdmin') return '/master-admin';
+      if (role === 'clubAdmin') return '/admin';
+      return '/dashboard';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.textContent = 'Logging in...';
+      btn.disabled = true;
+
+      try {
+        const data = await api.login({
+          email: document.getElementById('login-email').value,
+          password: document.getElementById('login-password').value
+        });
+        api.setToken(data.token);
+        api.setUser(data);
+        showToast('Login successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = getRedirectUrl(data.role);
+        }, 600);
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.textContent = 'Log In';
+        btn.disabled = false;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('reg-btn');
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+
+      try {
+        const data = await api.register({
+          name: document.getElementById('reg-name').value,
+          email: document.getElementById('reg-email').value,
+          password: document.getElementById('reg-password').value,
+          role: document.getElementById('reg-role').value
+        });
+        api.setToken(data.token);
+        api.setUser(data);
+        showToast('Account created! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = getRedirectUrl(data.role);
+        }, 600);
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

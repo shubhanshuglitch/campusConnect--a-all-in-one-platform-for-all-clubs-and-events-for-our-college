@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View club details, upcoming events, and more on CampusConnect.">
+  <title>Club Profile — CampusConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-mesh"></div>
+  <div class="bg-gradient-blur"></div>
+  <div class="floating-shapes">
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <span class="nav-brand-icon">🎓</span>
+      CampusConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/clubs">Clubs</a></li>
+      <li><a href="/events">Events</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="nav-auth"></div>
+    </div>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="profile-header">
+    <div class="container">
+      <div class="profile-info fade-in" id="profile-info">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="padding-bottom: 3rem;">
+    <h2 class="section-title fade-in" style="font-size:1.5rem;">Club Events</h2>
+    <p class="section-subtitle fade-in">All events hosted by this club</p>
+    <div class="grid grid-3" id="club-events">
+      <div class="loader"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        &copy; 2026 CampusConnect. Built for students, by students.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const clubId = window.location.pathname.split('/').pop();
+
+      try {
+        const data = await api.getClub(clubId);
+        const { club, events } = data;
+
+        document.title = `${club.name} — CampusConnect`;
+
+        // Render profile
+        document.getElementById('profile-info').innerHTML = `
+          <div class="profile-logo">
+            ${club.logo ? `<img src="${club.logo}" alt="${club.name}">` : getCategoryEmoji(club.category)}
+          </div>
+          <div class="profile-details">
+            <h1>${club.name}</h1>
+            <div class="profile-category">${getCategoryEmoji(club.category)} ${club.category}</div>
+            <p>${club.description}</p>
+            <div class="card-meta" style="margin-top: 1rem;">
+              <span>👤 Managed by ${club.admin ? club.admin.name : 'Admin'}</span>
+              <span>📅 Since ${formatDate(club.createdAt)}</span>
+              <span>🎯 ${events.length} event${events.length !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        `;
+
+        // Render events
+        const user = api.getUser();
+        const eventsGrid = document.getElementById('club-events');
+        if (events.length === 0) {
+          eventsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">📅</div><h3>No events yet</h3><p>This club hasn\'t posted any events. Check back later!</p></div>';
+        } else {
+          eventsGrid.innerHTML = events.map((event, i) => {
+            const dp = getDateParts(event.date);
+            const isInterested = user && event.interestedUsers && event.interestedUsers.includes(user._id);
+            return `
+              <div class="card event-card fade-in stagger-${(i % 4) + 1}">
+                <div class="event-poster" style="${event.poster ? `background-image:url(${event.poster});background-size:cover;background-position:center;` : ''}display:flex;align-items:center;justify-content:center;font-size:3rem;">
+                  ${event.poster ? '' : getCategoryEmoji(event.category)}
+                </div>
+                <div class="event-date-badge">
+                  <span class="day">${dp.day}</span>
+                  <span class="month">${dp.month}</span>
+                </div>
+                <div class="event-info">
+                  <span class="card-badge">${getCategoryEmoji(event.category)} ${event.category}</span>
+                  <h3>${event.title}</h3>
+                  <p>${event.description}</p>
+                </div>
+                <div class="event-footer">
+                  <div class="card-meta" style="margin-top:0;">
+                    <span>📍 ${event.venue}</span>
+                    <span>🕐 ${event.time}</span>
+                  </div>
+                  ${user ? `
+                    <button class="interest-btn ${isInterested ? 'active' : ''}" onclick="toggleInterest('${event._id}', this)">
+                      ❤️ <span>${event.interestedUsers ? event.interestedUsers.length : 0}</span>
+                    </button>
+                  ` : `<span class="interest-count">❤️ ${event.interestedUsers ? event.interestedUsers.length : 0}</span>`}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        document.getElementById('profile-info').innerHTML = '<div class="empty-state"><div class="empty-icon">😕</div><h3>Club not found</h3><p>This club may have been removed.</p><a href="/clubs" class="btn btn-primary">Browse Clubs</a></div>';
+        document.getElementById('club-events').innerHTML = '';
+      }
+    });
+
+    async function toggleInterest(eventId, btn) {
+      if (!api.isLoggedIn()) {
+        showToast('Please log in to mark interest', 'warning');
+        return;
+      }
+      try {
+        const data = await api.toggleInterest(eventId);
+        btn.classList.toggle('active', data.interested);
+        btn.querySelector('span').textContent = data.count;
+        showToast(data.interested ? 'Added to your interests!' : 'Removed from interests', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

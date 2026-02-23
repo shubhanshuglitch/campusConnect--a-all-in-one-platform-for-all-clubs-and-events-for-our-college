@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CampusConnect — Your one-stop platform for discovering college clubs, tracking events, and staying connected with campus life.">
+  <title>CampusConnect — Discover Campus Life</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-mesh"></div>
+  <div class="bg-gradient-blur"></div>
+  <div class="floating-shapes">
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <span class="nav-brand-icon">🎓</span>
+      CampusConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/clubs">Clubs</a></li>
+      <li><a href="/events">Events</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="nav-auth"></div>
+    </div>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-container">
+      <div class="hero-content fade-in">
+        <div class="hero-tag">
+          <span class="hero-tag-dot"></span>
+          Your Campus, Connected
+        </div>
+        <h1>Discover Clubs.<br><span class="gradient-text">Never Miss Events.</span></h1>
+        <p>CampusConnect is your unified platform to explore every college club, track upcoming events, and engage with campus life — all in one place.</p>
+        <div class="hero-actions">
+          <a href="/login" class="btn btn-primary btn-lg" id="hero-cta">Get Started</a>
+          <a href="/clubs" class="btn btn-outline btn-lg">Browse Clubs</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <h3 id="stat-clubs">0</h3>
+            <p>Active Clubs</p>
+          </div>
+          <div class="hero-stat">
+            <h3 id="stat-events">0</h3>
+            <p>Upcoming Events</p>
+          </div>
+          <div class="hero-stat">
+            <h3 id="stat-students">0</h3>
+            <p>Students</p>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-glow"></div>
+        <div class="hero-visual-wrapper">
+          <div class="hero-card-stack">
+            <div class="hero-card">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;">
+                <div style="width:48px;height:48px;background:var(--accent-gradient);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎭</div>
+                <div>
+                  <div style="font-weight:700;color:var(--text-primary);">Drama Club</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">Arts & Culture</div>
+                </div>
+              </div>
+              <div style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:1rem;">Experience the thrill of theatre and performances...</div>
+              <div style="display:flex;gap:8px;">
+                <span class="card-badge">🎭 Theater</span>
+                <span class="card-badge">⭐ Featured</span>
+              </div>
+            </div>
+            <div class="hero-card"></div>
+            <div class="hero-card"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Clubs -->
+  <section class="section" id="featured-clubs">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🏫 Student Organizations</span>
+        <h2 class="section-title fade-in">Featured Clubs</h2>
+        <p class="section-subtitle fade-in">Discover the most popular student organizations on campus</p>
+      </div>
+      <div class="grid grid-3" id="clubs-grid">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="/clubs" class="btn btn-outline">View All Clubs →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming Events -->
+  <section class="section" id="upcoming-events" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">📅 What's Happening</span>
+        <h2 class="section-title fade-in">Upcoming Events</h2>
+        <p class="section-subtitle fade-in">Don't miss out on these exciting upcoming activities</p>
+      </div>
+      <div class="grid grid-3" id="events-grid">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="/events" class="btn btn-outline">View All Events →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">✨ Platform Features</span>
+        <h2 class="section-title fade-in">Why CampusConnect?</h2>
+        <p class="section-subtitle fade-in">Everything you need for a vibrant campus experience</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card fade-in stagger-1">
+          <div class="feature-icon">📋</div>
+          <h3>Unified Directory</h3>
+          <p>Every club has a dedicated profile with descriptions, events, and contact info — no more hunting across platforms.</p>
+        </div>
+        <div class="feature-card fade-in stagger-2">
+          <div class="feature-icon">📅</div>
+          <h3>Event Timeline</h3>
+          <p>Browse all upcoming workshops, competitions, and fests in one timeline. Filter by category to find what excites you.</p>
+        </div>
+        <div class="feature-card fade-in stagger-3">
+          <div class="feature-icon">⭐</div>
+          <h3>Mark Interest</h3>
+          <p>Interested in an event? Mark it and get it saved to your dashboard so you never miss out.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">CampusConnect</div>
+          <p class="footer-desc">Bridging the gap between student organizations and the student body. One platform, all clubs, every event.</p>
+          <div class="footer-social">
+            <a href="https://x.com/Shubhan50717792" aria-label="Twitter">🐦</a>
+            <a href="https://www.instagram.com/shubhanshuu.verma" aria-label="Instagram">📷</a>
+            <a href="https://www.linkedin.com/in/shubhanshu-verma-424230320/" aria-label="LinkedIn">💼</a>
+            <a href="https://github.com/shubhanshuglitch" aria-label="GitHub">🐙</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="/clubs">Browse Clubs</a>
+          <a href="/events">Events</a>
+          <a href="/login">Sign Up</a>
+        </div>
+        <div class="footer-col">
+          <h4>Categories</h4>
+          <a href="/clubs?category=Coding">Coding</a>
+          <a href="/clubs?category=Music">Music</a>
+          <a href="/clubs?category=Sports">Sports</a>
+        </div>
+        <div class="footer-col">
+          <h4>About</h4>
+          <a href="mailto:vermask27122811@gmail.com">Contact Developer</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 CampusConnect. Built for students, by students.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Update hero CTA if logged in
+      const user = api.getUser();
+      if (user) {
+        const cta = document.getElementById('hero-cta');
+        cta.textContent = 'Go to Dashboard';
+        if (user.role === 'masterAdmin') cta.href = '/master-admin';
+        else if (user.role === 'clubAdmin') cta.href = '/admin';
+        else cta.href = '/dashboard';
+      }
+
+      // Load featured clubs
+      try {
+        const clubs = await api.getClubs();
+        const clubsGrid = document.getElementById('clubs-grid');
+        document.getElementById('stat-clubs').textContent = clubs.length;
+
+        if (clubs.length === 0) {
+          clubsGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">🏫</div><h3>No clubs yet</h3><p>Be the first to create a club!</p></div>';
+        } else {
+          clubsGrid.innerHTML = clubs.slice(0, 6).map((club, i) => `
+            <a href="/club/${club._id}" class="card fade-in stagger-${(i % 4) + 1}" style="text-decoration:none; color:inherit;">
+              <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                <div style="width:50px;height:50px;border-radius:12px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">
+                  ${club.logo ? `<img src="${club.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">` : getCategoryEmoji(club.category)}
+                </div>
+                <div>
+                  <div class="card-title" style="margin:0;">${club.name}</div>
+                  <span class="card-badge" style="margin-top:4px;">${getCategoryEmoji(club.category)} ${club.category}</span>
+                </div>
+              </div>
+              <p class="card-text">${truncate(club.description, 120)}</p>
+            </a>
+          `).join('');
+        }
+      } catch (err) {
+        document.getElementById('clubs-grid').innerHTML = '<div class="empty-state"><div class="empty-icon">🏫</div><h3>No clubs yet</h3><p>Be the first to create a club!</p></div>';
+      }
+
+      // Load upcoming events
+      try {
+        const events = await api.getEvents('upcoming=true');
+        const eventsGrid = document.getElementById('events-grid');
+        document.getElementById('stat-events').textContent = events.length;
+
+        if (events.length === 0) {
+          eventsGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><h3>No upcoming events</h3><p>Check back soon for exciting events!</p></div>';
+        } else {
+          eventsGrid.innerHTML = events.slice(0, 6).map((event, i) => {
+            const dp = getDateParts(event.date);
+            return `
+              <div class="card event-card fade-in stagger-${(i % 4) + 1}">
+                <div class="event-poster" style="${event.poster ? `background-image:url(${event.poster});background-size:cover;background-position:center;` : ''}display:flex;align-items:center;justify-content:center;font-size:3rem;">
+                  ${event.poster ? '' : getCategoryEmoji(event.category)}
+                </div>
+                <div class="event-date-badge">
+                  <span class="day">${dp.day}</span>
+                  <span class="month">${dp.month}</span>
+                </div>
+                <div class="event-info">
+                  <span class="card-badge">${getCategoryEmoji(event.category)} ${event.category}</span>
+                  <h3>${event.title}</h3>
+                  <p>${truncate(event.description, 80)}</p>
+                </div>
+                <div class="event-footer">
+                  <div class="card-meta" style="margin-top:0;">
+                    <span>📍 ${event.venue}</span>
+                    <span>🕐 ${event.time}</span>
+                  </div>
+                  <span class="interest-count">❤️ ${event.interestedUsers ? event.interestedUsers.length : 0}</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        document.getElementById('events-grid').innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><h3>No upcoming events</h3><p>Check back soon for exciting events!</p></div>';
+      }
+
+      // Animate stat counter
+      document.getElementById('stat-students').textContent = '50+';
+    });
+  </script>
+</body>
+</html>

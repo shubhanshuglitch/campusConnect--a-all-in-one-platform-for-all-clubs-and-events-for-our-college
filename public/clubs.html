@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse all college clubs on CampusConnect. Search and filter by category.">
+  <title>Clubs — CampusConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-mesh"></div>
+  <div class="bg-gradient-blur"></div>
+  <div class="floating-shapes">
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+    <div class="floating-shape"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <span class="nav-brand-icon">🎓</span>
+      CampusConnect
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/clubs" class="active">Clubs</a></li>
+      <li><a href="/events">Events</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <div class="nav-auth"></div>
+    </div>
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="dashboard" style="padding-top: 100px;">
+    <div class="container">
+      <div class="dashboard-header fade-in">
+        <div>
+          <h1 class="section-title">Explore Clubs</h1>
+          <p class="section-subtitle" style="margin-bottom:0;">Discover student organizations that match your interests</p>
+        </div>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="filter-bar fade-in">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search clubs by name..." oninput="filterClubs()">
+        </div>
+        <div class="category-filters" id="category-filters">
+          <button class="filter-chip active" onclick="setCategory('All', this)">All</button>
+          <button class="filter-chip" onclick="setCategory('Coding', this)">💻 Coding</button>
+          <button class="filter-chip" onclick="setCategory('Music', this)">🎵 Music</button>
+          <button class="filter-chip" onclick="setCategory('Sports', this)">⚽ Sports</button>
+          <button class="filter-chip" onclick="setCategory('Arts', this)">🎨 Arts</button>
+          <button class="filter-chip" onclick="setCategory('Science', this)">🔬 Science</button>
+          <button class="filter-chip" onclick="setCategory('Literature', this)">📚 Literature</button>
+          <button class="filter-chip" onclick="setCategory('Photography', this)">📷 Photography</button>
+          <button class="filter-chip" onclick="setCategory('Dance', this)">💃 Dance</button>
+          <button class="filter-chip" onclick="setCategory('Social Service', this)">🤝 Social</button>
+        </div>
+      </div>
+
+      <!-- Clubs Grid -->
+      <div class="grid grid-3" id="clubs-grid">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        &copy; 2026 CampusConnect. Built for students, by students.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let allClubs = [];
+    let activeCategory = 'All';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check for URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const cat = urlParams.get('category');
+      if (cat) {
+        activeCategory = cat;
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+          chip.classList.toggle('active', chip.textContent.includes(cat));
+        });
+      }
+
+      await loadClubs();
+    });
+
+    async function loadClubs() {
+      try {
+        const params = activeCategory !== 'All' ? `category=${activeCategory}` : '';
+        allClubs = await api.getClubs(params);
+        renderClubs(allClubs);
+      } catch (err) {
+        document.getElementById('clubs-grid').innerHTML = '<div class="empty-state"><div class="empty-icon">😕</div><h3>Failed to load clubs</h3><p>Please try again later.</p></div>';
+      }
+    }
+
+    function renderClubs(clubs) {
+      const grid = document.getElementById('clubs-grid');
+      if (clubs.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><h3>No clubs found</h3><p>Try adjusting your search or filter criteria.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = clubs.map((club, i) => `
+        <a href="/club/${club._id}" class="card fade-in stagger-${(i % 4) + 1}" style="text-decoration:none; color:inherit; display:flex; flex-direction:column;">
+          <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+            <div style="width:56px;height:56px;border-radius:14px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;">
+              ${club.logo ? `<img src="${club.logo}" style="width:100%;height:100%;object-fit:cover;">` : getCategoryEmoji(club.category)}
+            </div>
+            <div>
+              <div class="card-title" style="margin:0;">${club.name}</div>
+              <span class="card-badge" style="margin-top:4px;">${getCategoryEmoji(club.category)} ${club.category}</span>
+            </div>
+          </div>
+          <p class="card-text" style="flex:1;">${truncate(club.description, 150)}</p>
+          <div class="card-meta">
+            <span>👤 ${club.admin ? club.admin.name : 'Admin'}</span>
+            <span>📅 ${formatDate(club.createdAt)}</span>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    function setCategory(category, el) {
+      activeCategory = category;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      loadClubs();
+    }
+
+    function filterClubs() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtered = allClubs.filter(c => c.name.toLowerCase().includes(query));
+      renderClubs(filtered);
+    }
+  </script>
+</body>
+</html>
