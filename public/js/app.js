@@ -22,6 +22,11 @@ const api = {
   logout() {
     localStorage.removeItem('cc_token');
     localStorage.removeItem('cc_user');
+    // Close mobile menu if open
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks) {
+      navLinks.classList.remove('open');
+    }
     window.location.href = '/login';
   },
 
@@ -111,11 +116,82 @@ function setupNavbar() {
     }
   }
 
-  // Hamburger
+  // Add auth buttons to mobile menu
+  if (navLinks) {
+    // Remove any existing mobile auth items
+    const existingMobileAuth = navLinks.querySelectorAll('.mobile-auth-item');
+    existingMobileAuth.forEach(item => item.remove());
+    
+    // Add divider and auth options for mobile
+    const divider = document.createElement('li');
+    divider.className = 'mobile-auth-item nav-divider';
+    divider.style.cssText = 'height: 1px; background: var(--border-glass); margin: 0.5rem 0;';
+    navLinks.appendChild(divider);
+    
+    if (user) {
+      let dashLink = '/dashboard';
+      if (user.role === 'masterAdmin') dashLink = '/master-admin';
+      else if (user.role === 'clubAdmin') dashLink = '/admin';
+      
+      const welcomeItem = document.createElement('li');
+      welcomeItem.className = 'mobile-auth-item';
+      welcomeItem.innerHTML = `<span style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 1rem; display: block;">Hi, ${user.name}!</span>`;
+      navLinks.appendChild(welcomeItem);
+      
+      const dashItem = document.createElement('li');
+      dashItem.className = 'mobile-auth-item';
+      dashItem.innerHTML = `<a href="${dashLink}">📊 Dashboard</a>`;
+      navLinks.appendChild(dashItem);
+      
+      const logoutItem = document.createElement('li');
+      logoutItem.className = 'mobile-auth-item';
+      logoutItem.innerHTML = `<a href="#" onclick="api.logout(); return false;">🚪 Logout</a>`;
+      navLinks.appendChild(logoutItem);
+    } else {
+      const loginItem = document.createElement('li');
+      loginItem.className = 'mobile-auth-item';
+      loginItem.innerHTML = `<a href="/login">🔐 Log In</a>`;
+      navLinks.appendChild(loginItem);
+      
+      const signupItem = document.createElement('li');
+      signupItem.className = 'mobile-auth-item';
+      signupItem.innerHTML = `<a href="/login" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-1); border-radius: var(--radius-md);">✨ Sign Up</a>`;
+      navLinks.appendChild(signupItem);
+    }
+  }
+
+  // Hamburger with touch support
   const hamburger = document.querySelector('.hamburger');
   if (hamburger && navLinks) {
-    hamburger.addEventListener('click', () => {
+    const toggleMenu = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       navLinks.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', navLinks.classList.contains('open'));
+    };
+    
+    hamburger.addEventListener('click', toggleMenu);
+    hamburger.addEventListener('touchend', toggleMenu, { passive: false });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (navLinks.classList.contains('open') && 
+          !navLinks.contains(e.target) && 
+          !hamburger.contains(e.target)) {
+        navLinks.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
+    // Close menu when link is clicked (including mobile auth items)
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        // Don't close for logout button to ensure it executes
+        if (!link.getAttribute('onclick')?.includes('logout')) {
+          navLinks.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        }
+      });
     });
   }
 
@@ -125,6 +201,50 @@ function setupNavbar() {
     navLinks.querySelectorAll('a').forEach(a => {
       if (a.getAttribute('href') === path) a.classList.add('active');
     });
+  }
+}
+
+// ===== Touch & Swipe Support =====
+function addSwipeSupport() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchEndX = 0;
+  let touchEndY = 0;
+  
+  const navLinks = document.querySelector('.nav-links');
+  const hamburger = document.querySelector('.hamburger');
+  
+  if (navLinks && hamburger) {
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+    
+    document.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    }, { passive: true });
+    
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diffX = touchEndX - touchStartX;
+      const diffY = Math.abs(touchEndY - touchStartY);
+      
+      // Only trigger if horizontal swipe is greater than vertical
+      if (diffY < 100) {
+        // Swipe right to open menu
+        if (diffX > swipeThreshold && touchStartX < 50 && !navLinks.classList.contains('open')) {
+          navLinks.classList.add('open');
+          hamburger.setAttribute('aria-expanded', 'true');
+        }
+        // Swipe left to close menu
+        else if (diffX < -swipeThreshold && navLinks.classList.contains('open')) {
+          navLinks.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        }
+      }
+    }
   }
 }
 
@@ -204,9 +324,79 @@ function setupNavbarScroll() {
   }
 }
 
+// ===== Mobile Optimizations =====
+function setupMobileOptimizations() {
+  // Prevent double-tap zoom on buttons
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+  
+  // Improve scroll performance on mobile
+  let ticking = false;
+  let lastScrollY = window.scrollY;
+  
+  window.addEventListener('scroll', () => {
+    lastScrollY = window.scrollY;
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        handleScroll(lastScrollY);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+  
+  function handleScroll(scrollY) {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+      if (scrollY > 20) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
+  }
+  
+  // Add active state visual feedback for touch
+  document.querySelectorAll('.btn, .card, .filter-chip').forEach(element => {
+    element.addEventListener('touchstart', function() {
+      this.style.opacity = '0.8';
+    }, { passive: true });
+    
+    element.addEventListener('touchend', function() {
+      this.style.opacity = '';
+    }, { passive: true });
+    
+    element.addEventListener('touchcancel', function() {
+      this.style.opacity = '';
+    }, { passive: true });
+  });
+}
+
+// ===== Viewport Height Fix for Mobile =====
+function setVhProperty() {
+  // Fix for mobile viewport height issues
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
 // Run on every page
 document.addEventListener('DOMContentLoaded', () => {
   setupNavbar();
   setupTheme();
   setupNavbarScroll();
+  addSwipeSupport();
+  setupMobileOptimizations();
+  setVhProperty();
+});
+
+// Update vh on resize and orientation change
+window.addEventListener('resize', setVhProperty);
+window.addEventListener('orientationchange', () => {
+  setTimeout(setVhProperty, 100);
 });

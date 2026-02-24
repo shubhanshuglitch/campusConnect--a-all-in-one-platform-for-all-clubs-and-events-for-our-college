@@ -39,9 +39,38 @@ app.use((err, req, res, next) => {
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/campusconnect';
 
+// Auto-seed master admin on startup
+async function seedMasterAdmin() {
+  try {
+    const User = require('./models/User');
+    const masterEmail = 'shubhanshujaypee@gmail.com';
+    
+    const existing = await User.findOne({ email: masterEmail });
+    if (!existing) {
+      await User.create({
+        name: 'Shubhanshu',
+        email: masterEmail,
+        password: 'Somu@2712',
+        role: 'masterAdmin'
+      });
+      console.log('✅ Master Admin seeded');
+    } else if (existing.role !== 'masterAdmin') {
+      existing.role = 'masterAdmin';
+      await existing.save();
+      console.log('✅ Master Admin role updated');
+    }
+  } catch (err) {
+    console.log('ℹ️  Master Admin seed skipped:', err.message);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('✅ Connected to MongoDB');
+    
+    // Seed master admin if not exists
+    await seedMasterAdmin();
+    
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`🚀 CampusConnect server running on http://localhost:${PORT}`);
