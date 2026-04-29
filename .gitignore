@@ -20,4 +20,5 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Seed scripts
 seedMasterAdmin.js
